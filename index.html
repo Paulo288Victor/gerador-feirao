@@ -2,12 +2,77 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Teste de Acesso</title>
+  <title>Acesso Controlado</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    #conteudo {
+      padding: 40px;
+    }
+
+    #bloqueado {
+      display: none;
+      text-align: center;
+      padding: 50px;
+    }
+
+    #bloqueado h1 {
+      color: #c00;
+    }
+
+    #bloqueado img {
+      margin-top: 20px;
+      width: 220px;
+    }
+  </style>
 </head>
 <body>
 
-<h1>Site liberado</h1>
-<p>Se você está vendo isso, o acesso está ativo.</p>
+<div id="conteudo">
+  <h1>Site liberado</h1>
+  <p>Conteúdo visível apenas com acesso ativo.</p>
+</div>
+
+<div id="bloqueado">
+  <h1>⛔ ACESSO EXPIRADO</h1>
+  <p>
+    Seu acesso expirou.<br>
+    Você utilizou o sistema por 30 dias.<br><br>
+    Entre em contato com o suporte para liberar seu acesso novamente.
+  </p>
+
+  <img id="qrcode" alt="QR Code WhatsApp">
+</div>
+
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+
+  const WHATSAPP_NUMERO = "5599999999999"; // ALTERE
+  const MENSAGEM = "SEU ACESSO EXPIROU, VOCE USOU POR 30 DIAS, ENTRE EM CONTATO COM O SUPORTE PARA LIBERAR SEU ACESSO NOVAMENTE";
+
+  fetch(`/.netlify/functions/validar?token=${token}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.status !== "ativo") {
+        document.getElementById("conteudo").style.display = "none";
+        document.getElementById("bloqueado").style.display = "block";
+
+        const link = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(MENSAGEM)}`;
+        const qr = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(link)}`;
+
+        document.getElementById("qrcode").src = qr;
+      }
+    })
+    .catch(() => {
+      document.body.innerHTML = "<h1>Erro ao validar acesso</h1>";
+    });
+</script>
 
 </body>
 </html>
