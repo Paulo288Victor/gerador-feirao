@@ -6,67 +6,134 @@
 
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f4f6f8;
       margin: 0;
-      padding: 0;
     }
 
+    /* ===== CONTEÚDO NORMAL ===== */
     #conteudo {
       padding: 40px;
     }
 
+    /* ===== TELA BLOQUEADA ===== */
     #bloqueado {
       display: none;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 12px;
+      max-width: 420px;
+      width: 100%;
       text-align: center;
-      padding: 50px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
     }
 
-    #bloqueado h1 {
-      color: #c00;
+    .icon {
+      font-size: 48px;
+      color: #e63946;
     }
 
-    #bloqueado img {
-      margin-top: 20px;
+    .card h1 {
+      margin: 15px 0;
+      color: #333;
+    }
+
+    .card p {
+      color: #555;
+      line-height: 1.6;
+      margin-top: 10px;
+    }
+
+    .qrcode {
+      margin: 25px 0;
+    }
+
+    .qrcode img {
       width: 220px;
+      height: 220px;
+    }
+
+    .btn {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 12px 22px;
+      background: #25D366;
+      color: #fff;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      background: #1ebe5d;
     }
   </style>
 </head>
 <body>
 
+<!-- ===== CONTEÚDO LIBERADO ===== -->
 <div id="conteudo">
   <h1>Site liberado</h1>
-  <p>Conteúdo visível apenas com acesso ativo.</p>
-</div>
-
-<div id="bloqueado">
-  <h1>⛔ ACESSO EXPIRADO</h1>
   <p>
-    Seu acesso expirou.<br>
-    Você utilizou o sistema por 30 dias.<br><br>
-    Entre em contato com o suporte para liberar seu acesso novamente.
+    Este conteúdo só aparece quando o acesso está <strong>ativo</strong>.
   </p>
 
-  <img id="qrcode" alt="QR Code WhatsApp">
+  <!-- AQUI ENTRA O SEU SITE REAL -->
+</div>
+
+<!-- ===== TELA DE ACESSO EXPIRADO ===== -->
+<div id="bloqueado">
+  <div class="card">
+    <div class="icon">🔒</div>
+    <h1>Acesso Expirado</h1>
+
+    <p>
+      Seu acesso foi encerrado após <strong>30 dias de uso</strong>.<br>
+      Para continuar utilizando o sistema, entre em contato com o suporte.
+    </p>
+
+    <div class="qrcode">
+      <img id="qrcode" alt="QR Code WhatsApp">
+    </div>
+
+    <a id="btnWhatsapp" class="btn" target="_blank">
+      Falar com o suporte
+    </a>
+  </div>
 </div>
 
 <script>
+  // ===== CONFIGURAÇÕES =====
+  const WHATSAPP_NUMERO = "5588993567120"; // COLOQUE SEU NÚMERO AQUI
+  const MENSAGEM = "SEU ACESSO EXPIROU, VOCE USOU POR 30 DIAS, ENTRE EM CONTATO COM O SUPORTE PARA LIBERAR SEU ACESSO NOVAMENTE";
+  // ==========================
+
   const params = new URLSearchParams(window.location.search);
   const token = params.get("token");
-
-  const WHATSAPP_NUMERO = "5599999999999"; // ALTERE
-  const MENSAGEM = "SEU ACESSO EXPIROU, VOCE USOU POR 30 DIAS, ENTRE EM CONTATO COM O SUPORTE PARA LIBERAR SEU ACESSO NOVAMENTE";
 
   fetch(`/.netlify/functions/validar?token=${token}`)
     .then(res => res.json())
     .then(data => {
       if (data.status !== "ativo") {
         document.getElementById("conteudo").style.display = "none";
-        document.getElementById("bloqueado").style.display = "block";
+        document.getElementById("bloqueado").style.display = "flex";
 
-        const link = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(MENSAGEM)}`;
-        const qr = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(link)}`;
+        const linkWhatsapp =
+          `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(MENSAGEM)}`;
 
-        document.getElementById("qrcode").src = qr;
+        const qrCodeUrl =
+          `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(linkWhatsapp)}`;
+
+        document.getElementById("qrcode").src = qrCodeUrl;
+        document.getElementById("btnWhatsapp").href = linkWhatsapp;
       }
     })
     .catch(() => {
